@@ -1,3 +1,3 @@
 'use strict';
 
-module.exports = require('./src/api/index')
+module.exports = require('./src/index')
