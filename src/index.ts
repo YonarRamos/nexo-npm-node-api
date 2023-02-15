@@ -16,7 +16,7 @@ let _port = 9000;
 let threads = require('os').cpus().length;
 let running = 0;
 
-app = express();
+const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
@@ -34,7 +34,7 @@ function start()
     } else {
 
         app.all("*", run(fallback));
-        app.listen(_port, () => process.send("OK"));
+        app.listen(_port, () => process.send?("OK"):"");
     }
 }
 
