@@ -93,7 +93,7 @@ function run(service) { return async(request, socket) =>
     let code, response;
 
     // Asigna un valor único a la llamada de la API.
-    request.id = parseInt(Math.random() * 1000000);
+    request.id = parseInt(`${Math.random() * 1000000}`);
     request.timestamp = new Date();
 
     let endpoint = request.url.substring(0, request.url.indexOf('?'))
