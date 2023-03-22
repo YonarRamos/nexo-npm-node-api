@@ -11,6 +11,8 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 var bodyParser = require("body-parser");
 var express = require("express");
+var swaggerJsdoc = require('swagger-jsdoc');
+var swaggerUi = require('swagger-ui-express');
 var cluster = require('cluster');
 var _require = require("express"),
   response = _require.response;
@@ -29,6 +31,40 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 app.use(bodyParser.json());
+var options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Swagger test',
+      version: '1.0.0'
+    }
+  },
+  apis: ['./dist/src/*.js'] // files containing annotations as above
+};
+
+var specs = swaggerJsdoc(options);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+function swaggerTest() {
+  /**
+  * @swagger
+  * /:
+  *   get:
+  *     description: Welcome to swagger-jsdoc!
+  *     responses:
+  *       200:
+  *         description: Returns a mysterious string.
+  */
+  try {
+    app.get('/', function (req, res) {
+      res.send('Hello Swagger!');
+    });
+    app.listen(3000, function () {
+      console.log("Example app listening on port ".concat(3000));
+    });
+  } catch (error) {
+    return console.log(error);
+  }
+}
 function start() {
   if (cluster.isMaster) {
     for (var i = 0; i < threads; i++) cluster.fork();
@@ -189,5 +225,6 @@ module.exports = {
   onResponse: onResponse,
   onInitialize: onInitialize,
   onFallback: onFallback,
-  onEnd: onEnd
+  onEnd: onEnd,
+  swaggerTest: swaggerTest
 };

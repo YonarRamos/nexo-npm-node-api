@@ -1,5 +1,7 @@
 const bodyParser = require("body-parser");
 const express = require("express");
+const swaggerJsdoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
 
 const cluster = require('cluster');
 const {response} = require("express");
@@ -19,6 +21,44 @@ let running = 0;
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+const options = {
+    definition: {
+      openapi: '3.0.0',
+      info: {
+        title: 'Swagger test',
+        version: '1.0.0',
+      },
+    },
+    apis: ['./dist/src/*.js'], // files containing annotations as above
+  };
+
+  const specs = swaggerJsdoc(options);
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+function swaggerTest(){
+    /**
+ * @swagger
+ * /:
+ *   get:
+ *     description: Welcome to swagger-jsdoc!
+ *     responses:
+ *       200:
+ *         description: Returns a mysterious string.
+ */
+try {
+    app.get('/', (req, res) => {
+        res.send('Hello Swagger!')
+    })
+    app.listen(3000, () => {
+        console.log(`Example app listening on port ${3000}`)
+    })
+      
+} catch (error) {
+    return console.log(error)
+}
+
+}
 
 function start()
 {
@@ -135,5 +175,5 @@ async function fallback(request, response)
 }
 
 module.exports = {
-    start, port, get, put, post, del, onRequest, onError, onResponse, onInitialize, onFallback, onEnd
+    start, port, get, put, post, del, onRequest, onError, onResponse, onInitialize, onFallback, onEnd, swaggerTest
 }
