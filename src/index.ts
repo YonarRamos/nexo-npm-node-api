@@ -14,6 +14,8 @@ let _onFallback;
 let _onInitialize;
 let _onEnd;
 let _port = 9000;
+let _swaggerTitle;
+let _swaggerDirectory = './*.js';
 
 let threads = require('os').cpus().length;
 let running = 0;
@@ -22,46 +24,32 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const options = {
-    definition: {
-      openapi: '3.0.0',
-      info: {
-        title: 'Swagger test',
-        version: '1.0.0',
-      },
-    },
-    apis: ['./dist/src/*.js'], // files containing annotations as above
-  };
-
-  const specs = swaggerJsdoc(options);
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-function swaggerTest(){
-    /**
- * @swagger
- * /:
- *   get:
- *     description: Welcome to swagger-jsdoc!
- *     responses:
- *       200:
- *         description: Returns a mysterious string.
- */
-try {
-    app.get('/', (req, res) => {
-        res.send('Hello Swagger!')
-    })
-    app.listen(3000, () => {
-        console.log(`Example app listening on port ${3000}`)
-    })
-      
-} catch (error) {
-    return console.log(error)
+function enableSwagger() {
+    let _swaggerOptions = {
+        definition: {
+          openapi: '3.0.0',
+          info: {
+            title: _swaggerTitle || 'Swagger',
+            version: '1.0.0',
+          },
+        },
+        apis: [_swaggerDirectory], // files containing annotations as above
+      }
+    const specs = swaggerJsdoc(_swaggerOptions);
+    app.use('/swagger', swaggerUi.serve, swaggerUi.setup(specs));
 }
 
+function swaggerDirectory (directory: string) {
+    _swaggerDirectory = directory
+}
+
+function swaggerTitle (title: string) {
+    _swaggerTitle = title
 }
 
 function start()
 {
+    console.log('ejecutando...')
     if (cluster.isMaster)
     {
         for (let i = 0; i < threads; i++)
@@ -175,5 +163,19 @@ async function fallback(request, response)
 }
 
 module.exports = {
-    start, port, get, put, post, del, onRequest, onError, onResponse, onInitialize, onFallback, onEnd, swaggerTest
+    start, 
+    port, 
+    get, 
+    put, 
+    post, 
+    del, 
+    onRequest, 
+    onError, 
+    onResponse, 
+    onInitialize, 
+    onFallback, 
+    onEnd, 
+    swaggerDirectory, 
+    swaggerTitle,
+    enableSwagger
 }

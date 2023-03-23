@@ -24,6 +24,8 @@ var _onFallback;
 var _onInitialize;
 var _onEnd;
 var _port = 9000;
+var _swaggerTitle;
+var _swaggerDirectory = './*.js';
 var threads = require('os').cpus().length;
 var running = 0;
 var app = express();
@@ -31,41 +33,29 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 app.use(bodyParser.json());
-var options = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'Swagger test',
-      version: '1.0.0'
-    }
-  },
-  apis: ['./dist/src/*.js'] // files containing annotations as above
-};
+function enableSwagger() {
+  var _swaggerOptions = {
+    definition: {
+      openapi: '3.0.0',
+      info: {
+        title: _swaggerTitle || 'Swagger',
+        version: '1.0.0'
+      }
+    },
+    apis: [_swaggerDirectory] // files containing annotations as above
+  };
 
-var specs = swaggerJsdoc(options);
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-function swaggerTest() {
-  /**
-  * @swagger
-  * /:
-  *   get:
-  *     description: Welcome to swagger-jsdoc!
-  *     responses:
-  *       200:
-  *         description: Returns a mysterious string.
-  */
-  try {
-    app.get('/', function (req, res) {
-      res.send('Hello Swagger!');
-    });
-    app.listen(3000, function () {
-      console.log("Example app listening on port ".concat(3000));
-    });
-  } catch (error) {
-    return console.log(error);
-  }
+  var specs = swaggerJsdoc(_swaggerOptions);
+  app.use('/swagger', swaggerUi.serve, swaggerUi.setup(specs));
+}
+function swaggerDirectory(directory) {
+  _swaggerDirectory = directory;
+}
+function swaggerTitle(title) {
+  _swaggerTitle = title;
 }
 function start() {
+  console.log('ejecutando...');
   if (cluster.isMaster) {
     for (var i = 0; i < threads; i++) cluster.fork();
     cluster.on('message', function (worker, code, signal) {
@@ -226,5 +216,7 @@ module.exports = {
   onInitialize: onInitialize,
   onFallback: onFallback,
   onEnd: onEnd,
-  swaggerTest: swaggerTest
+  swaggerDirectory: swaggerDirectory,
+  swaggerTitle: swaggerTitle,
+  enableSwagger: enableSwagger
 };
