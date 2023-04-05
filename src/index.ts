@@ -49,7 +49,6 @@ function swaggerTitle (title: string) {
 
 function start()
 {
-    console.log('ejecutando...')
     if (cluster.isMaster)
     {
         for (let i = 0; i < threads; i++)
@@ -62,7 +61,7 @@ function start()
     } else {
 
         app.all("*", run(fallback));
-        app.listen(_port, () => process.send?("OK"):"");
+        app.listen(_port, () => process.send?("OK"):"");_onInitialize?.(_port);
     }
 }
 
